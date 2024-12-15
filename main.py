@@ -1,7 +1,6 @@
 from transport.client import Client
-from transport.vehicle import Vehicle,Train,Airplane 
+from transport.vehicle import Train,Airplane 
 from transport.transportcompany import TransportCompany
-from transport.vehicle import Vehicle
 def menu():
 	transportcompany = TransportCompany("TransGo")
 	while True:
@@ -9,9 +8,10 @@ def menu():
 		print("1. Добавить клиента")
 		print("2. Добавить транспортное средство")
 		print("3. Показать все транспортные средства")
-		print("4. Распределить грузы")
-		print("5. Удалить клиента")
-		print("6. Выйти из программы")
+		print("4. Показать всех клиентов")
+		print("5. Распределить грузы")
+		print("6. Удалить клиента")
+		print("7. Выйти из программы")
 		choice = input("Выберите пункт из предложенного выше списка: ")
 		if choice == "1":
 			name=input("Введите имя клиента: ")
@@ -21,11 +21,12 @@ def menu():
 			transportcompany.add_client(Client(name, weight, is_vip))
 		elif choice == "2":
 			choice_type_vehicle=input("Выберите вид транспорта(самолет - 1,поезд - 2): ")
-			capacity=float(input("Введите грузоподъёмность: "))
 			if choice_type_vehicle=="1":
+				capacity=float(input("Введите грузоподъёмность: "))
 				max_altitude=input("Введите максимальную высоту полета: ")
 				transportcompany.add_vehicle(Airplane(capacity,max_altitude))
 			elif choice_type_vehicle=="2":
+				capacity=float(input("Введите грузоподъёмность: "))
 				number_of_cars=input("Введите количество вагонов: ")
 				transportcompany.add_vehicle(Train(capacity,number_of_cars))
 			else:
@@ -38,6 +39,13 @@ def menu():
 			else: 
 				print("Нету транспортных средств!")
 		elif choice == "4":
+			print("\nКлиенты: ")
+			if transportcompany.list_clients():
+				for vehicle in transportcompany.list_vehicles():
+					print(vehicle)
+			else: 
+				print("Нету транспортных средств!")
+		elif choice == "5":
 			transportcompany.optimize_cargo_distribution()
 			print("\nГрузы успешно распределены!")
 			print("\nРезультат распределения груза: ")
@@ -45,7 +53,7 @@ def menu():
 				print(vehicle)
 				for client in vehicle.clients_list:
 						print(f"Клиент: {client.name}, груз: {client.cargo_weight} тонн, VIP: {'да' if client.is_vip else 'нет'}")
-		elif choice == "5":
+		elif choice == "6":
 			find_to_deleteclient = input("Введите имя клиента: ")
 			for client in transportcompany.clients:
 				if client.name == find_to_deleteclient:
@@ -55,7 +63,7 @@ def menu():
 					print("Клиента с таким именем нет!")
 			else:
 				print("Неправильный выбор, попробуйте снова!")
-		elif choice == "6":
+		elif choice == "7":
 			break
 		else:
 			print("Неправильный выбор, попробуйте снова")
