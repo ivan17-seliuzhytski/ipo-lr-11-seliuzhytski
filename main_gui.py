@@ -7,7 +7,7 @@ class Transportapp:
     def __init__(person, root):
         person.company = TransportCompany("TransGo")
         root.title("TransGo")
-        root.geometry("1500x750")
+        root.geometry("1500x400")
         menu = tk.Menu(root)
         root.config(menu=menu)
         file_menu = tk.Menu(menu, tearoff=0)
@@ -39,6 +39,7 @@ class Transportapp:
         person.clients_tree.heading('Вес груза', text = 'Вес груза')
         person.clients_tree.heading('VIP', text = 'VIP')
         person.clients_tree.pack(side=tk.LEFT)
+        person.clients_tree.bind("<Double-1>", person.on_client_double_click)
 
         person.vehicles_tree = ttk.Treeview(person.data_frame, columns=('ID', 'Тип', 'Грузоподъемность', 'Текущая загрузка'), show='headings')
         person.vehicles_tree.heading('ID', text = 'ID')
@@ -46,6 +47,55 @@ class Transportapp:
         person.vehicles_tree.heading('Грузоподъемность', text = 'Грузоподъемность')
         person.vehicles_tree.heading('Текущая загрузка', text = 'Текущая загрузка')
         person.vehicles_tree.pack(side=tk.RIGHT)
+    def on_client_double_click(self, event):
+        selected_item = self.clients_tree.selection()[0]
+        client_values = self.clients_tree.item(selected_item, "values")
+        self.edit_client(client_values)
+    def edit_client(self, client_values):
+        client_window = tk.Toplevel()
+        client_window.title("Редактировать клиента")
+        client_window.geometry("300x200")
+        tk.Label(client_window, text="Имя:").grid(row=0, column=0)
+        name_entry = tk.Entry(client_window)
+        name_entry.insert(0, client_values[0])
+        name_entry.grid(row=0, column=1)
+        tk.Label(client_window, text="Вес груза:").grid(row=1, column=0)
+        cargo_entry = tk.Entry(client_window)
+        cargo_entry.insert(0, client_values[1])
+        cargo_entry.grid(row=1, column=1)
+        vip_var = tk.IntVar()
+        vip_check = tk.Checkbutton(client_window, text="VIP", variable=vip_var)
+        vip_check.grid(row=2, column=1)
+        if client_values[2] == 'да':
+            vip_var.set(1)
+        def save_client():
+            try:
+                name = name_entry.get()
+                if not name.isalpha() or len(name) < 2:
+                    raise ValueError("Имя клиента должно содержать только буквы и иметь минимум 2 символа")
+                cargo_weight = float(cargo_entry.get())
+                if cargo_weight <= 0 or cargo_weight > 10000:
+                    raise ValueError("Вес груза должен быть положительным числом не более 10000 кг")
+                is_vip = vip_var.get() == 1
+                for client in self.company.clients:
+                    if client.name == client_values[0]:
+                        client.name = name
+                        client.cargo_weight = cargo_weight
+                        client.is_vip = is_vip
+                        break
+                self.status.set("Клиент обновлен")
+                client_window.destroy()
+                messagebox.showinfo("Успех", "Клиент обновлен!")
+                self.update_clients_tree()
+            except ValueError as e:
+                self.status.set("Ошибка")
+                messagebox.showerror("Ошибка", str(e))
+                name_entry.delete(0, tk.END)
+                cargo_entry.delete(0, tk.END)
+        save_button = tk.Button(client_window, text="Сохранить", command=save_client)
+        save_button.grid(row=3, column=1)
+        cancel_button = tk.Button(client_window, text="Отмена", command=client_window.destroy)
+        cancel_button.grid(row=3, column=0)
     def add_client(self):
         client_window = tk.Toplevel()
         client_window.title("Добавить клиента")
@@ -158,7 +208,7 @@ class Transportapp:
     def export_results(self):
         messagebox.showinfo("Экспорт результата", "Функция экспорта еще не реализована")
     def about(self):
-        messagebox.showinfo("О программе", "Лабораторная работа: номер\nВариант: номер\nФИО разработчика")
+        messagebox.showinfo("О программе", "Лабораторная работа: 12\nВариант: 5\nФИО разработчика: Селюжицкий Иван Павлович")
     def update_clients_tree(self):
         for row in self.clients_tree.get_children():
             self.clients_tree.delete(row)
